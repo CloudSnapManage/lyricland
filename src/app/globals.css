@@ -100,12 +100,10 @@
 
   .book-title {
     @apply font-headline text-sm font-bold leading-tight;
-     text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
   }
 
   .book-artist {
     @apply text-xs font-body self-end;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
   }
 
   .book-shelf {
