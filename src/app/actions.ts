@@ -49,25 +49,24 @@ export async function searchLyrics(
     if (lrcResponse.ok) {
       const lrcData = await lrcResponse.json();
       if (lrcData && lrcData.length > 0) {
-        // Find the first result that is not instrumental and has either plain or synced lyrics.
         const firstResult = lrcData.find((item: any) => !item.instrumental && (item.plainLyrics || item.syncedLyrics));
         
         if (firstResult) {
-            // Fallback to syncedLyrics if plainLyrics is null, and clean the timestamps.
-            const syncedLyricsText = firstResult.syncedLyrics ? 
-                                     firstResult.syncedLyrics.replace(/\[\d{2}:\d{2}\.\d{2,3}\]/g, '').trim() :
-                                     null;
+          let lyrics = firstResult.plainLyrics;
+          
+          if (!lyrics && firstResult.syncedLyrics) {
+            lyrics = firstResult.syncedLyrics.replace(/\[\d{2}:\d{2}\.\d{2,3}\]/g, '').trim();
+          }
 
-            const lyrics = firstResult.plainLyrics || syncedLyricsText;
-
-            if (lyrics) {
-              return { lyrics: lyrics, track: firstResult.trackName, artist: firstResult.artistName, error: null };
-            }
+          if (lyrics) {
+            return { lyrics: lyrics, track: firstResult.trackName, artist: firstResult.artistName, error: null };
+          }
         }
       }
     }
   } catch (e) {
     console.error('LRCLIB API Error:', e);
+    // Fall through to the generic error message
   }
 
   const errorMessage = `Sorry, we couldn't find lyrics for "${track}"${artist ? ` by "${artist}"` : ''}. Please check the spelling and try again.`;
