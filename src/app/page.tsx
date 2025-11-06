@@ -10,7 +10,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -108,7 +108,7 @@ export default function Home() {
                   </div>
 
                   <CollapsibleContent forceMount className={cn("transition-all duration-500 ease-in-out overflow-hidden", isSearchActive ? 'max-h-24' : 'max-h-0')}>
-                      <div className="p-2 rounded-full flex items-center gap-2 border bg-card">
+                      <div className={cn("p-2 rounded-full flex items-center gap-2 border bg-card transition-shadow", isSearchActive && "shadow-lg")}>
                           <div className="flex-grow pl-4">
                               <div className="relative flex items-center">
                                   <User className="h-5 w-5 absolute left-0 text-muted-foreground" />
