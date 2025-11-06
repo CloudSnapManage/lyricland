@@ -92,15 +92,15 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-dvh bg-background text-foreground p-4 font-body">
+    <div className="flex flex-col items-center justify-start sm:justify-center min-h-dvh bg-background text-foreground p-4 sm:p-6 font-body">
         
-        <div className="w-full max-w-2xl flex flex-col items-center gap-8">
-            <div className="flex flex-col items-center gap-4 text-primary">
-                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" strokeWidth="1.5">
+        <div className="w-full max-w-2xl flex flex-col items-center gap-6 sm:gap-8">
+            <div className="flex flex-col items-center gap-2 text-center text-primary">
+                <svg width="56" height="56" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" strokeWidth="1.5" className="h-12 w-12 sm:h-16 sm:w-16">
                     <path d="M12 1.5C5.64873 1.5 0.5 6.64873 0.5 13C0.5 19.3513 5.64873 24.5 12 24.5C18.3513 24.5 23.5 19.3513 23.5 13C23.5 10.1561 22.446 7.55416 20.6924 5.5H19.5V2.5H20.9381C21.4029 2.94028 21.8213 3.41803 22.1864 3.92601L19.5 6.61237V9.5H16.5L14.0739 6.88763C13.4344 6.67876 12.7312 6.5 12 6.5C9.09841 6.5 6.7844 8.68069 6.51706 11.5H9.5V14.5H6.51706C6.7844 17.3193 9.09841 19.5 12 19.5C14.9016 19.5 17.2156 17.3193 17.4829 14.5H14.5V11.5H17.4829C17.2156 8.68069 14.9016 6.5 12 6.5" transform="translate(-0.000003, -1.5)"/>
                 </svg>
-                <h1 className="font-headline text-3xl font-bold text-foreground">Lyric Library</h1>
-                 <p className="text-muted-foreground text-center max-w-md">Search for song lyrics by track and artist to add them to your personal library.</p>
+                <h1 className="font-headline text-2xl sm:text-3xl font-bold text-foreground">Lyric Library</h1>
+                 <p className="text-muted-foreground text-center max-w-md text-sm sm:text-base">Search for song lyrics by track and artist to add them to your personal library.</p>
             </div>
 
             <form action={formAction} className="w-full" onFocus={handleFocus} onBlur={handleBlur}>
@@ -166,10 +166,10 @@ export default function Home() {
 
             {/* Library Bookshelf */}
             {library.length > 0 && (
-                <div className="w-full mt-12">
+                <div className="w-full mt-8 sm:mt-12">
                     <div className="flex items-center gap-2 mb-4">
-                        <Library className="h-6 w-6 text-primary" />
-                        <h2 className="text-2xl font-bold text-foreground">Your Library</h2>
+                        <Library className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+                        <h2 className="text-xl sm:text-2xl font-bold text-foreground">Your Library</h2>
                     </div>
                     <div className="bookshelf">
                         {library.map((item, index) => (
