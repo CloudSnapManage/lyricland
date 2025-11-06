@@ -5,7 +5,7 @@ import { useFormStatus } from 'react-dom';
 import { searchLyrics } from '@/app/actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Loader2, Search, Music, User, Library, X } from 'lucide-react';
+import { Loader2, Search, Music, User, Library } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -96,38 +96,45 @@ export default function Home() {
                 <h1 className="font-headline text-3xl font-bold text-foreground">Lyric Library</h1>
             </div>
 
-            <Collapsible open={true} className="w-full">
-                <form action={formAction} className="w-full">
-                    <div className={cn("search-container p-2 rounded-full flex items-center gap-2 border transition-all duration-500", isSearchActive && 'search-active')}>
-                        <div className="flex-grow pl-4">
-                            <div className="relative flex items-center">
-                                <Music className="h-5 w-5 absolute left-0 text-muted-foreground" />
-                                <Input
-                                    id="track"
-                                    name="track"
-                                    placeholder="Track name..."
-                                    className="h-12 bg-transparent border-none pl-8 !ring-0 !ring-offset-0"
-                                    required
-                                    onChange={handleTrackInputChange}
-                                />
-                            </div>
-                            <CollapsibleContent forceMount className={cn("transition-all duration-300 ease-in-out overflow-hidden", isSearchActive ? 'max-h-20' : 'max-h-0')}>
-                                <div className="relative flex items-center mt-1">
-                                    <User className="h-5 w-5 absolute left-0 text-muted-foreground" />
-                                    <Input
-                                        id="artist"
-                                        name="artist"
-                                        placeholder="Artist name..."
-                                        className="h-12 bg-transparent border-none pl-8 !ring-0 !ring-offset-0"
-                                        required
-                                    />
-                                </div>
-                            </CollapsibleContent>
-                        </div>
-                        <SubmitButton />
-                    </div>
-                </form>
-            </Collapsible>
+            <form action={formAction} className="w-full">
+              <Collapsible open={true} className="w-full">
+                  <div className={cn("p-2 rounded-full flex items-center gap-2 border bg-card transition-all duration-500", isSearchActive && "shadow-lg")}>
+                      <div className="flex-grow pl-4">
+                          <div className="relative flex items-center">
+                              <Music className="h-5 w-5 absolute left-0 text-muted-foreground" />
+                              <Input
+                                  id="track"
+                                  name="track"
+                                  placeholder="Track name..."
+                                  className="h-12 bg-transparent border-none pl-8 !ring-0 !ring-offset-0"
+                                  required
+                                  onChange={handleTrackInputChange}
+                                  onFocus={() => setIsSearchActive(true)}
+                                  onBlur={() => setIsSearchActive(document.activeElement?.closest('form') === document.querySelector('form'))}
+                              />
+                          </div>
+                      </div>
+                      <SubmitButton />
+                  </div>
+
+                  <CollapsibleContent forceMount className={cn("transition-all duration-300 ease-in-out overflow-hidden", isSearchActive ? 'max-h-24' : 'max-h-0')}>
+                      <div className="p-2 rounded-full flex items-center gap-2 border bg-card mt-2">
+                          <div className="flex-grow pl-4">
+                              <div className="relative flex items-center">
+                                  <User className="h-5 w-5 absolute left-0 text-muted-foreground" />
+                                  <Input
+                                      id="artist"
+                                      name="artist"
+                                      placeholder="Artist name..."
+                                      className="h-12 bg-transparent border-none pl-8 !ring-0 !ring-offset-0"
+                                      required
+                                  />
+                              </div>
+                          </div>
+                      </div>
+                  </CollapsibleContent>
+              </Collapsible>
+            </form>
 
             {state?.error && (
                 <Alert variant="destructive" className="mt-4 animate-in fade-in duration-500 max-w-md">
