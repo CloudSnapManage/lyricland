@@ -107,7 +107,6 @@ export default function Home() {
   
   const handleFocus = () => setIsSearchActive(true);
   const handleBlur = (e: React.FocusEvent<HTMLFormElement>) => {
-    // Check if the newly focused element is outside the form
     if (!e.currentTarget.contains(e.relatedTarget as Node | null)) {
         setIsSearchActive(false);
     }
@@ -167,15 +166,15 @@ export default function Home() {
             )}
 
             <Dialog open={isLyricDialogOpen} onOpenChange={setIsLyricDialogOpen}>
-                <DialogContent className="max-w-2xl">
+                <DialogContent className="w-[90vw] sm:max-w-2xl">
                     <DialogHeader>
                         <DialogTitle>{state.track}</DialogTitle>
                         <DialogDescription>{state.artist}</DialogDescription>
                     </DialogHeader>
-                    <ScrollArea className="h-[60vh] mt-4">
+                    <ScrollArea className="h-[60vh] sm:h-[50vh] mt-4">
                         <pre className="whitespace-pre-wrap font-body text-sm leading-relaxed pr-6">{state.lyrics}</pre>
                     </ScrollArea>
-                    <div className="flex justify-end gap-2 mt-4">
+                    <div className="flex justify-end gap-2 mt-4 flex-wrap">
                         <Button type="button" variant="ghost" onClick={() => handleListenOnYouTube(state.track!, state.artist!)}>
                             <Youtube className="mr-2 h-4 w-4" />
                             Listen
@@ -214,16 +213,16 @@ export default function Home() {
 
             {/* Library Item Viewer */}
             <Dialog open={!!activeBook} onOpenChange={(isOpen) => !isOpen && setActiveBook(null)}>
-                <DialogContent className="max-w-2xl">
+                <DialogContent className="w-[90vw] sm:max-w-2xl">
                     <DialogHeader>
                         <DialogTitle>{activeBook?.track}</DialogTitle>
                         <DialogDescription>{activeBook?.artist}</DialogDescription>
                     </DialogHeader>
-                    <ScrollArea className="h-[60vh] mt-4">
+                    <ScrollArea className="h-[60vh] sm:h-[50vh] mt-4">
                         <pre className="whitespace-pre-wrap font-body text-sm leading-relaxed pr-6">{activeBook?.lyrics}</pre>
 
                     </ScrollArea>
-                    <div className="flex justify-end gap-2 mt-4">
+                    <div className="flex justify-end gap-2 mt-4 flex-wrap">
                          <Button type="button" variant="ghost" onClick={() => handleListenOnYouTube(activeBook!.track!, activeBook!.artist!)}>
                             <Youtube className="mr-2 h-4 w-4" />
                             Listen
