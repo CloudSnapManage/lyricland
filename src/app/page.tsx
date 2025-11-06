@@ -101,6 +101,7 @@ export default function Home() {
   
   const handleFocus = () => setIsSearchActive(true);
   const handleBlur = (e: React.FocusEvent<HTMLFormElement>) => {
+    // Check if the new focused element is outside the form
     if (!e.currentTarget.contains(e.relatedTarget as Node | null)) {
         setIsSearchActive(false);
     }
