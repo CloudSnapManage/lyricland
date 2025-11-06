@@ -11,7 +11,7 @@ type SearchState = {
 // This schema validates the data received from the form.
 const searchSchema = z.object({
   track: z.string().trim().min(1, { message: 'Track name is required.' }),
-  artist: z.string().trim().optional(),
+  artist: z.string().trim().optional().transform(val => val === '' ? undefined : val),
 });
 
 export async function searchLyrics(
