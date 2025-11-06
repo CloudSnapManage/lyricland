@@ -4,6 +4,8 @@ import { z } from 'zod';
 
 type SearchState = {
   lyrics: string | null;
+  track: string | null;
+  artist: string | null;
   error: string | null;
   message?: string | null;
 };
@@ -11,7 +13,7 @@ type SearchState = {
 // This schema validates the data received from the form.
 const searchSchema = z.object({
   track: z.string().trim().min(1, { message: 'Track name is required.' }),
-  artist: z.string().trim().optional().transform(val => val === '' ? undefined : val),
+  artist: z.string().trim().min(1, { message: 'Artist name is required.' }),
 });
 
 export async function searchLyrics(
@@ -25,9 +27,12 @@ export async function searchLyrics(
 
   // If validation fails, return the error.
   if (!validatedFields.success) {
+    const fieldErrors = validatedFields.error.flatten().fieldErrors;
     return {
       lyrics: null,
-      error: validatedFields.error.flatten().fieldErrors.track?.[0] || "Invalid input.",
+      track: null,
+      artist: null,
+      error: fieldErrors.track?.[0] || fieldErrors.artist?.[0] || "Invalid input.",
     };
   }
 
@@ -37,10 +42,8 @@ export async function searchLyrics(
   try {
     const lrcUrl = new URL('https://api.lrclib.net/api/search');
     lrcUrl.searchParams.set('track_name', track);
-    if (artist) {
-      lrcUrl.searchParams.set('artist_name', artist);
-    }
-
+    lrcUrl.searchParams.set('artist_name', artist);
+    
     const lrcResponse = await fetch(lrcUrl);
 
     if (lrcResponse.ok) {
@@ -49,7 +52,7 @@ export async function searchLyrics(
         const firstResult = lrcData[0];
         if (firstResult && !firstResult.instrumental) {
           if (firstResult.plainLyrics) {
-            return { lyrics: firstResult.plainLyrics, error: null };
+            return { lyrics: firstResult.plainLyrics, track, artist, error: null };
           }
           // Fallback for synced lyrics if plain is missing
           if (firstResult.syncedLyrics) {
@@ -57,7 +60,7 @@ export async function searchLyrics(
               .replace(/\[\d{2}:\d{2}\.\d{2,3}\]/g, '')
               .trim();
             if (plain) {
-              return { lyrics: plain, error: null };
+              return { lyrics: plain, track, artist, error: null };
             }
           }
         }
@@ -69,32 +72,32 @@ export async function searchLyrics(
   }
 
   // 2. Try lyrics.ovh if an artist was provided
-  if (artist) {
-    try {
-      const ovhUrl = `https://api.lyrics.ovh/v1/${encodeURIComponent(
-        artist
-      )}/${encodeURIComponent(track)}`;
-      const ovhResponse = await fetch(ovhUrl);
+  try {
+    const ovhUrl = `https://api.lyrics.ovh/v1/${encodeURIComponent(
+      artist
+    )}/${encodeURIComponent(track)}`;
+    const ovhResponse = await fetch(ovhUrl);
 
-      if (ovhResponse.ok) {
-        const ovhData = await ovhResponse.json();
-        if (ovhData.lyrics) {
-          // Clean up the lyrics from lyrics.ovh which often include a header
-          const cleanedLyrics = ovhData.lyrics
-            .replace(/Paroles de la chanson .+\n/, '')
-            .trim();
-          return { lyrics: cleanedLyrics, error: null };
-        }
+    if (ovhResponse.ok) {
+      const ovhData = await ovhResponse.json();
+      if (ovhData.lyrics) {
+        // Clean up the lyrics from lyrics.ovh which often include a header
+        const cleanedLyrics = ovhData.lyrics
+          .replace(/Paroles de la chanson .+\n/, '')
+          .trim();
+        return { lyrics: cleanedLyrics, track, artist, error: null };
       }
-    } catch (e) {
-      console.error('Lyrics.ovh API Error:', e);
-      // Don't return, proceed to the final error message
     }
+  } catch (e) {
+    console.error('Lyrics.ovh API Error:', e);
+    // Don't return, proceed to the final error message
   }
 
   // 3. If all APIs fail or no results are found
   return {
     lyrics: null,
-    error: `Sorry, we couldn't find lyrics for "${track}". Please check the spelling or try adding an artist name in the advanced search.`,
+    track: null,
+    artist: null,
+    error: `Sorry, we couldn't find lyrics for "${track}" by ${artist}. Please check the spelling and try again.`,
   };
 }
