@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, Music2, Search, BookMarked, Trash2, Library, BookOpen, ExternalLink, View } from 'lucide-react';
+import { Loader2, Music2, Search, BookMarked, Trash2, Library, BookOpen } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription, DialogClose } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -69,7 +69,8 @@ export default function Home() {
   const [isLyricDialogOpen, setIsLyricDialogOpen] = useState(false);
 
   useEffect(() => {
-    if (state.lyrics) {
+    // This effect now correctly triggers the dialog when a search is successful.
+    if (state.lyrics && state.track && state.artist) {
       setIsLyricDialogOpen(true);
     }
   }, [state.lyrics, state.track, state.artist]);
@@ -156,7 +157,7 @@ export default function Home() {
               <CardHeader>
                 <CardTitle className="font-headline">Find & Save Lyrics</CardTitle>
                 <CardDescription>
-                  Enter a track and artist name below. Both fields are required to add songs to your library.
+                  Enter a track and artist name below. Both fields are required to find lyrics and add them to your library.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
