@@ -16,6 +16,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Loader2, Music2, Search } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -41,7 +42,7 @@ export default function Home() {
   const initialState = {
     lyrics: null,
     error: null,
-    message: 'Enter an artist and song to find the lyrics.',
+    message: 'Enter a song to find the lyrics.',
   };
   const [state, formAction] = useActionState(searchLyrics, initialState);
 
@@ -62,23 +63,14 @@ export default function Home() {
               <CardHeader>
                 <CardTitle className="font-headline">Find Lyrics</CardTitle>
                 <CardDescription>
-                  Enter an artist and track name below.
+                  Enter a track name below.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="artist">Artist</Label>
+                 <div className="space-y-2">
+                  <Label htmlFor="track-main">Track Name</Label>
                   <Input
-                    id="artist"
-                    name="artist"
-                    placeholder="e.g., Queen"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="track">Track Name</Label>
-                  <Input
-                    id="track"
+                    id="track-main"
                     name="track"
                     placeholder="e.g., Bohemian Rhapsody"
                     required
@@ -90,6 +82,48 @@ export default function Home() {
               </CardFooter>
             </form>
           </Card>
+          
+          <Accordion type="single" collapsible className="w-full">
+            <AccordionItem value="item-1">
+              <AccordionTrigger>
+                <span className="text-sm font-medium">Advanced Search</span>
+              </AccordionTrigger>
+              <AccordionContent>
+                <Card>
+                   <form action={formAction}>
+                    <CardHeader>
+                      <CardDescription>
+                        For a more specific search, provide both artist and track.
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="artist">Artist</Label>
+                        <Input
+                          id="artist"
+                          name="artist"
+                          placeholder="e.g., Queen"
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="track">Track Name</Label>
+                        <Input
+                          id="track"
+                          name="track"
+                          placeholder="e.g., Bohemian Rhapsody"
+                          required
+                        />
+                      </div>
+                    </CardContent>
+                    <CardFooter>
+                      <SubmitButton />
+                    </CardFooter>
+                  </form>
+                </Card>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
 
           <div className="animate-in fade-in duration-500">
             {state?.lyrics && (
