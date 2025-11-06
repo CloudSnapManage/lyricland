@@ -5,12 +5,11 @@ import { useFormStatus } from 'react-dom';
 import { searchLyrics } from '@/app/actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Loader2, Search, Music, User, Library, Download, FileText, ChevronDown } from 'lucide-react';
+import { Loader2, Search, Music, User, Library, Download } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 
 function SubmitButton() {
@@ -102,12 +101,9 @@ export default function Home() {
   
   const handleFocus = () => setIsSearchActive(true);
   const handleBlur = (e: React.FocusEvent<HTMLFormElement>) => {
-    // Use a timeout to allow click events on the collapsible content
-    setTimeout(() => {
-        if (!e.currentTarget.contains(document.activeElement)) {
-            setIsSearchActive(false);
-        }
-    }, 0);
+    if (!e.currentTarget.contains(e.relatedTarget as Node | null)) {
+        setIsSearchActive(false);
+    }
   };
 
   return (
