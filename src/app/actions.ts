@@ -7,11 +7,11 @@ type SearchState = {
   track: string | null;
   artist: string | null;
   error: string | null;
-  message?: string | null;
 };
 
 const searchSchema = z.object({
   track: z.string().trim().min(1, { message: 'Track name is required.' }),
+  artist: z.string().trim().optional().transform(val => val === '' ? undefined : val),
 });
 
 export async function searchLyrics(
@@ -20,6 +20,7 @@ export async function searchLyrics(
 ): Promise<SearchState> {
   const validatedFields = searchSchema.safeParse({
     track: formData.get('track'),
+    artist: formData.get('artist'),
   });
 
   if (!validatedFields.success) {
@@ -32,11 +33,14 @@ export async function searchLyrics(
     };
   }
 
-  const { track } = validatedFields.data;
+  const { track, artist } = validatedFields.data;
   
   try {
     const lrcUrl = new URL('https://api.lrclib.net/api/search');
     lrcUrl.searchParams.set('track_name', track);
+    if(artist) {
+      lrcUrl.searchParams.set('artist_name', artist);
+    }
     
     const lrcResponse = await fetch(lrcUrl);
 
@@ -58,10 +62,14 @@ export async function searchLyrics(
     }
   } catch (e) {
     console.error('LRCLIB API Error:', e);
-    // Don't return, proceed to the error
+    // Proceed to error message
   }
 
-  let errorMessage = `Sorry, we couldn't find lyrics for "${track}". Please check the spelling and try again.`;
+  let errorMessage = `Sorry, we couldn't find lyrics for "${track}"`;
+  if (artist) {
+    errorMessage += ` by "${artist}"`;
+  }
+  errorMessage += ". Please check the spelling and try again.";
 
   return {
     lyrics: null,
