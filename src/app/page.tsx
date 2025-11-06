@@ -68,14 +68,15 @@ export default function Home() {
   const [library, setLibrary] = useState<SavedLyric[]>([]);
   const [isLyricDialogOpen, setIsLyricDialogOpen] = useState(false);
 
+  // This effect will run when `state` changes, which happens after the server action completes.
   useEffect(() => {
-    // This effect now correctly triggers the dialog when a search is successful.
+    // If we have lyrics from a search, open the dialog.
     if (state.lyrics && state.track && state.artist) {
       setIsLyricDialogOpen(true);
     } else {
       setIsLyricDialogOpen(false);
     }
-  }, [state]);
+  }, [state.lyrics, state.track, state.artist]); // Depend on specific fields to avoid re-renders
   
 
   useEffect(() => {
