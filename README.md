@@ -21,6 +21,7 @@ Welcome to Lyric Land, a sleek and modern web application designed for music lov
 
 - **Framework:** [Next.js](https://nextjs.org/) (App Router)
 - **Language:** [TypeScript](https://www.typescriptlang.org/)
+- **API:** [lrclib.net](https://lrclib.net/)
 - **Styling:** [Tailwind CSS](https://tailwindcss.com/)
 - **UI Components:** [ShadCN UI](https://ui.shadcn.com/)
 - **Icons:** [Lucide React](https://lucide.dev/)
