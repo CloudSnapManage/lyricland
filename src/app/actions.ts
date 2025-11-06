@@ -90,6 +90,6 @@ export async function searchLyrics(
   // 3. If all APIs fail
   return {
     lyrics: null,
-    error: "Sorry, we couldn't find lyrics for that song. Please check the track name or try the advanced search.",
+    error: `Sorry, we couldn't find lyrics for that song. Please check the track name or try the advanced search.`,
   };
 }
