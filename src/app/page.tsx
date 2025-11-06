@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState, useState, useEffect } from 'react';
+import { useActionState, useState, useEffect, useRef } from 'react';
 import { useFormStatus } from 'react-dom';
 import { searchLyrics } from '@/app/actions';
 import { Button } from '@/components/ui/button';
@@ -36,6 +36,8 @@ export default function Home() {
   const [library, setLibrary] = useState<LyricEntry[]>([]);
   const [activeBook, setActiveBook] = useState<LyricEntry | null>(null);
   const [isSearchActive, setIsSearchActive] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
+
 
   useEffect(() => {
     try {
@@ -88,7 +90,7 @@ export default function Home() {
     if (!lyrics || !track || !artist) return;
     
     const filename = `${track} by (${artist})Lyrics.txt`;
-    const blob = new Blob([lyrics], { type: 'text/plain' });
+    const blob = new Blob([lyrics], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -117,7 +119,7 @@ export default function Home() {
         
         <div className="w-full max-w-4xl flex flex-col items-center gap-6 sm:gap-8">
             <div className="flex flex-col items-center gap-2 text-center">
-                 <svg width="56" height="56" viewBox="0 0 24.00 24.00" id="music-lyric" data-name="Flat Line" xmlns="http://www.w3.org/2000/svg" className="icon flat-line h-14 w-14 sm:h-16 sm:w-16">
+                <svg width="56" height="56" viewBox="0 0 24 24" id="music-lyric" data-name="Flat Line" xmlns="http://www.w3.org/2000/svg" className="icon flat-line h-14 w-14 sm:h-16 sm:w-16 fill-primary">
                     <path id="secondary" d="M9,10a1,1,0,0,1,1-1h7V4a1,1,0,0,0-1-1H5A1,1,0,0,0,4,4V18a1,1,0,0,0,1,1H9Z" style={{fill: 'hsl(var(--accent))', strokeWidth: 1.5}}></path>
                     <path id="primary" d="M20,13H17v6" style={{fill: 'none', stroke: 'hsl(var(--primary))', strokeLinecap: 'round', strokeLinejoin: 'round', strokeWidth: 1.5}}></path>
                     <path id="primary-2" data-name="primary" d="M9,19H5a1,1,0,0,1-1-1V4A1,1,0,0,1,5,3H16a1,1,0,0,1,1,1V9" style={{fill: 'none', stroke: 'hsl(var(--primary))', strokeLinecap: 'round', strokeLinejoin: 'round', strokeWidth: 1.5}}></path>
@@ -127,7 +129,7 @@ export default function Home() {
                  <p className="text-muted-foreground text-center max-w-md text-sm sm:text-base">Search for song lyrics by track and artist to add them to your personal library.</p>
             </div>
 
-            <form action={formAction} className="w-full max-w-2xl" onFocus={handleFocus} onBlur={handleBlur}>
+            <form ref={formRef} action={formAction} className="w-full max-w-2xl" onFocus={handleFocus} onBlur={handleBlur}>
                 <div className="space-y-2">
                      <div className={cn("p-2 rounded-full flex items-center gap-2 border bg-card transition-shadow", isSearchActive && "shadow-lg")}>
                         <div className="relative flex-grow flex items-center pl-4">
@@ -143,7 +145,7 @@ export default function Home() {
                         <SubmitButton />
                     </div>
                     <div className={cn("transition-all duration-300 ease-in-out overflow-hidden", isSearchActive ? "max-h-24 opacity-100" : "max-h-0 opacity-0")}>
-                        <div className={cn("p-2 rounded-full flex items-center gap-2 border bg-card transition-shadow", isSearchActive && "shadow-lg")}>
+                        <div className={cn("p-2 rounded-full flex items-center gap-2 border bg-card")}>
                             <div className="relative flex-grow flex items-center pl-4">
                                 <User className="h-5 w-5 absolute left-4 text-muted-foreground" />
                                 <Input

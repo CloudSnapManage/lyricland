@@ -44,45 +44,59 @@ export async function searchLyrics(
     
     const lrcResponse = await fetch(lrcUrl);
 
-    if (lrcResponse.ok) {
-      const lrcData = await lrcResponse.json();
-      if (lrcData && lrcData.length > 0) {
-        
-        let foundSong = null;
+    if (!lrcResponse.ok) {
+        throw new Error(`API request failed with status ${lrcResponse.status}`);
+    }
 
-        // Prioritize exact match if artist is provided
-        if (artist) {
-            foundSong = lrcData.find((item: any) => 
-                !item.instrumental &&
-                item.trackName.toLowerCase() === track.toLowerCase() &&
-                item.artistName.toLowerCase().includes(artist.toLowerCase()) &&
-                (item.plainLyrics || item.syncedLyrics)
-            );
+    const lrcData = await lrcResponse.json();
+
+    if (lrcData && lrcData.length > 0) {
+      let foundSong = null;
+
+      // Filter out instrumentals and songs without lyrics first
+      const validSongs = lrcData.filter((item: any) => !item.instrumental && (item.plainLyrics || item.syncedLyrics));
+
+      if (validSongs.length === 0) {
+        // Fall through to generic error if no valid songs are found
+      }
+      // If artist is provided, try to find an exact match
+      else if (artist) {
+          foundSong = validSongs.find((item: any) => 
+              item.trackName.toLowerCase() === track.toLowerCase() &&
+              item.artistName.toLowerCase().includes(artist.toLowerCase())
+          );
+      }
+
+      // If no exact match or no artist was given, use the first valid result
+      if (!foundSong) {
+          foundSong = validSongs[0];
+      }
+      
+      if (foundSong) {
+        let lyrics = foundSong.plainLyrics;
+        
+        // If plain lyrics are missing, parse synced lyrics
+        if (!lyrics && foundSong.syncedLyrics) {
+          lyrics = foundSong.syncedLyrics
+            .split('\n')
+            .map((line: string) => line.replace(/\[\d{2}:\d{2}\.\d{2,3}\]/g, '').trim())
+            .filter(Boolean)
+            .join('\n');
         }
 
-        // Fallback to first available if no exact match or no artist given
-        if (!foundSong) {
-            foundSong = lrcData.find((item: any) => 
-                !item.instrumental && (item.plainLyrics || item.syncedLyrics)
-            );
-        }
-        
-        if (foundSong) {
-          let lyrics = foundSong.plainLyrics;
-          
-          if (!lyrics && foundSong.syncedLyrics) {
-            lyrics = foundSong.syncedLyrics.replace(/\[\d{2}:\d{2}\.\d{2,3}\]/g, '').trim();
-          }
-
-          if (lyrics) {
-            return { lyrics: lyrics, track: foundSong.trackName, artist: foundSong.artistName, error: null };
-          }
+        if (lyrics) {
+          return { lyrics: lyrics, track: foundSong.trackName, artist: foundSong.artistName, error: null };
         }
       }
     }
   } catch (e) {
     console.error('API Error:', e);
-    // Fall through to the generic error message
+    return {
+        lyrics: null,
+        track: null,
+        artist: null,
+        error: 'An unexpected error occurred while fetching lyrics. Please try again later.'
+    };
   }
 
   const errorMessage = `Sorry, we couldn't find lyrics for "${track}"${artist ? ` by "${artist}"` : ''}. Please check the spelling and try again.`;
