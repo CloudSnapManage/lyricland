@@ -117,7 +117,7 @@ export default function Home() {
                       <SubmitButton />
                   </div>
 
-                  <CollapsibleContent forceMount className={cn("transition-all duration-300 ease-in-out overflow-hidden", isSearchActive ? 'max-h-24' : 'max-h-0')}>
+                  <CollapsibleContent forceMount className={cn("transition-all duration-500 ease-in-out overflow-hidden", isSearchActive ? 'max-h-24' : 'max-h-0')}>
                       <div className="p-2 rounded-full flex items-center gap-2 border bg-card mt-2">
                           <div className="flex-grow pl-4">
                               <div className="relative flex items-center">
@@ -201,3 +201,5 @@ export default function Home() {
     </div>
   );
 }
+
+    
