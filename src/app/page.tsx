@@ -131,7 +131,6 @@ export default function Home() {
                                         name="artist"
                                         placeholder="Artist name..."
                                         className="h-12 bg-transparent border-none pl-8 !ring-0 !ring-offset-0"
-                                        required
                                     />
                                 </div>
                             </div>
