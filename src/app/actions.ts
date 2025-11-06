@@ -37,10 +37,8 @@ export async function searchLyrics(
   
   try {
     const params = new URLSearchParams();
-    params.set('track_name', track);
-    if (artist) {
-      params.set('artist_name', artist);
-    }
+    const query = [track, artist].filter(Boolean).join(' ');
+    params.set('q', query);
     
     const lrcUrl = `https://api.lrclib.net/api/search?${params.toString()}`;
     
