@@ -115,7 +115,7 @@ export default function Home() {
   return (
     <div className="flex flex-col items-center justify-start sm:justify-center min-h-dvh bg-background text-foreground p-4 sm:p-6 font-body">
         
-        <div className="w-full max-w-2xl flex flex-col items-center gap-6 sm:gap-8">
+        <div className="w-full max-w-4xl flex flex-col items-center gap-6 sm:gap-8">
             <div className="flex flex-col items-center gap-2 text-center">
                  <svg width="56" height="56" viewBox="0 0 24.00 24.00" id="music-lyric" data-name="Flat Line" xmlns="http://www.w3.org/2000/svg" className="icon flat-line h-14 w-14 sm:h-16 sm:w-16">
                     <path id="secondary" d="M9,10a1,1,0,0,1,1-1h7V4a1,1,0,0,0-1-1H5A1,1,0,0,0,4,4V18a1,1,0,0,0,1,1H9Z" style={{fill: 'hsl(var(--accent))', strokeWidth: 1.5}}></path>
@@ -127,7 +127,7 @@ export default function Home() {
                  <p className="text-muted-foreground text-center max-w-md text-sm sm:text-base">Search for song lyrics by track and artist to add them to your personal library.</p>
             </div>
 
-            <form action={formAction} className="w-full" onFocus={handleFocus} onBlur={handleBlur}>
+            <form action={formAction} className="w-full max-w-2xl" onFocus={handleFocus} onBlur={handleBlur}>
                 <div className="space-y-2">
                      <div className={cn("p-2 rounded-full flex items-center gap-2 border bg-card transition-shadow", isSearchActive && "shadow-lg")}>
                         <div className="relative flex-grow flex items-center pl-4">
@@ -194,17 +194,18 @@ export default function Home() {
             {/* Library Bookshelf */}
             {library.length > 0 && (
                 <div className="w-full mt-8 sm:mt-12">
-                    <div className="flex items-center gap-2 mb-4">
+                    <div className="flex items-center gap-2 mb-4 px-4">
                         <Library className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
                         <h2 className="text-xl sm:text-2xl font-bold text-foreground">Your Library</h2>
                     </div>
                     <div className="shelf">
                         {library.map((item, index) => (
-                            <div key={`${item.track}-${item.artist}-${index}`} className="book" style={{'--book-color': `hsl(${index * 35}, 60%, 70%)`} as React.CSSProperties} onClick={() => setActiveBook(item)}>
-                                <div className="book-spine">
+                            <div key={`${item.track}-${item.artist}-${index}`} className="book" onClick={() => setActiveBook(item)}>
+                                <div className="book-cover" style={{'--book-color': `hsl(${index * 35 + 200}, 60%, 50%)`} as React.CSSProperties}>
                                     <div className="book-title">{item.track}</div>
                                     <div className="book-artist">{item.artist}</div>
                                 </div>
+                                <div className="book-shelf"></div>
                             </div>
                         ))}
                     </div>
