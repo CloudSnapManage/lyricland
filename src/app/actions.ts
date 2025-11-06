@@ -31,30 +31,33 @@ export async function searchLyrics(
 
   const { artist, track } = validatedFields.data;
 
-  // 1. Try LRCLIB.NET (works with or without artist)
+  // 1. Try LRCLIB.NET using the correct /api/search endpoint
   try {
-    const lrcUrl = new URL('https://api.lrclib.net/api/get');
+    const lrcUrl = new URL('https://api.lrclib.net/api/search');
+    lrcUrl.searchParams.set('track_name', track);
     if (artist) {
         lrcUrl.searchParams.set('artist_name', artist);
     }
-    lrcUrl.searchParams.set('track_name', track);
 
     const lrcResponse = await fetch(lrcUrl);
 
     if (lrcResponse.ok) {
       const lrcData = await lrcResponse.json();
-      // Check for various successful responses from this API
-      if (lrcData && !lrcData.instrumental) {
-        if (lrcData.plainLyrics) {
-          return { lyrics: lrcData.plainLyrics, error: null };
-        }
-        // Fallback for synced lyrics if plain lyrics aren't available
-        if (lrcData.syncedLyrics) {
-          const plain = lrcData.syncedLyrics
-            .replace(/\[\d{2}:\d{2}\.\d{2,3}\]/g, '')
-            .trim();
-          if (plain) {
-            return { lyrics: plain, error: null };
+      // The /search endpoint returns an array. We'll take the first result.
+      if (lrcData && lrcData.length > 0) {
+        const firstResult = lrcData[0];
+        if (firstResult && !firstResult.instrumental) {
+          if (firstResult.plainLyrics) {
+            return { lyrics: firstResult.plainLyrics, error: null };
+          }
+          // Fallback for synced lyrics if plain lyrics aren't available
+          if (firstResult.syncedLyrics) {
+            const plain = firstResult.syncedLyrics
+              .replace(/\[\d{2}:\d{2}\.\d{2,3}\]/g, '')
+              .trim();
+            if (plain) {
+              return { lyrics: plain, error: null };
+            }
           }
         }
       }
@@ -91,6 +94,6 @@ export async function searchLyrics(
   // 3. If all APIs fail
   return {
     lyrics: null,
-    error: `Sorry, we couldn't find lyrics for "${track}". Please check the spelling or try adding an artist name in the advanced search.`,
+    error: `Sorry, we couldn't find lyrics for "${track}". Please check the spelling or try adding an artist name.`,
   };
 }
