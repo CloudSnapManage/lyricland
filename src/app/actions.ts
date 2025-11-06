@@ -40,30 +40,48 @@ export async function searchLyrics(
     const query = [track, artist].filter(Boolean).join(' ');
     params.set('q', query);
     
-    const lrcUrl = `https://api.lrclib.net/api/search?${params.toString()}`;
+    const lrcUrl = `https://lrclib.net/api/search?${params.toString()}`;
     
     const lrcResponse = await fetch(lrcUrl);
 
     if (lrcResponse.ok) {
       const lrcData = await lrcResponse.json();
       if (lrcData && lrcData.length > 0) {
-        const firstResult = lrcData.find((item: any) => !item.instrumental && (item.plainLyrics || item.syncedLyrics));
         
-        if (firstResult) {
-          let lyrics = firstResult.plainLyrics;
+        let foundSong = null;
+
+        // Prioritize exact match if artist is provided
+        if (artist) {
+            foundSong = lrcData.find((item: any) => 
+                !item.instrumental &&
+                item.trackName.toLowerCase() === track.toLowerCase() &&
+                item.artistName.toLowerCase().includes(artist.toLowerCase()) &&
+                (item.plainLyrics || item.syncedLyrics)
+            );
+        }
+
+        // Fallback to first available if no exact match or no artist given
+        if (!foundSong) {
+            foundSong = lrcData.find((item: any) => 
+                !item.instrumental && (item.plainLyrics || item.syncedLyrics)
+            );
+        }
+        
+        if (foundSong) {
+          let lyrics = foundSong.plainLyrics;
           
-          if (!lyrics && firstResult.syncedLyrics) {
-            lyrics = firstResult.syncedLyrics.replace(/\[\d{2}:\d{2}\.\d{2,3}\]/g, '').trim();
+          if (!lyrics && foundSong.syncedLyrics) {
+            lyrics = foundSong.syncedLyrics.replace(/\[\d{2}:\d{2}\.\d{2,3}\]/g, '').trim();
           }
 
           if (lyrics) {
-            return { lyrics: lyrics, track: firstResult.trackName, artist: firstResult.artistName, error: null };
+            return { lyrics: lyrics, track: foundSong.trackName, artist: foundSong.artistName, error: null };
           }
         }
       }
     }
   } catch (e) {
-    console.error('LRCLIB API Error:', e);
+    console.error('API Error:', e);
     // Fall through to the generic error message
   }
 
