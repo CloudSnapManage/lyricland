@@ -4,17 +4,8 @@ import { useActionState, useState, useEffect } from 'react';
 import { useFormStatus } from 'react-dom';
 import { searchLyrics } from '@/app/actions';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Loader2, Music2, Search, BookMarked, Trash2, Library, BookOpen } from 'lucide-react';
+import { Loader2, Search, BookMarked, Trash2, Github, Heart } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription, DialogClose } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -23,17 +14,11 @@ function SubmitButton() {
   const { pending } = useFormStatus();
 
   return (
-    <Button type="submit" className="w-full" disabled={pending}>
+    <Button type="submit" size="icon" className="h-12 w-12 rounded-full" disabled={pending}>
       {pending ? (
-        <>
-          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          Searching...
-        </>
+          <Loader2 className="h-5 w-5 animate-spin" />
       ) : (
-        <>
-          <Search className="mr-2 h-4 w-4" />
-          Search
-        </>
+          <Search className="h-5 w-5" />
       )}
     </Button>
   );
@@ -45,17 +30,6 @@ type SavedLyric = {
   lyrics: string;
 };
 
-// Helper to get a consistent color from a string
-const getColorFromString = (str: string) => {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    hash = str.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  const hue = hash % 360;
-  return `hsl(${hue}, 60%, 75%)`;
-};
-
-
 export default function Home() {
   const initialState = {
     lyrics: null,
@@ -65,54 +39,17 @@ export default function Home() {
     message: null,
   };
   const [state, formAction] = useActionState(searchLyrics, initialState);
-  const [library, setLibrary] = useState<SavedLyric[]>([]);
   const [isLyricDialogOpen, setIsLyricDialogOpen] = useState(false);
 
-  // This effect will run when `state` changes, which happens after the server action completes.
   useEffect(() => {
-    // If we have lyrics from a search, open the dialog.
     if (state.lyrics && state.track && state.artist) {
       setIsLyricDialogOpen(true);
     } else {
       setIsLyricDialogOpen(false);
     }
-  }, [state.lyrics, state.track, state.artist]); // Depend on specific fields to avoid re-renders
-  
-
-  useEffect(() => {
-    try {
-      const savedLibrary = localStorage.getItem('lyricsLibrary');
-      if (savedLibrary) {
-        setLibrary(JSON.parse(savedLibrary));
-      }
-    } catch (error) {
-      console.error("Could not load from local storage", error);
-    }
-  }, []);
-
-  const saveToLibrary = (item: SavedLyric) => {
-    // Prevent duplicates
-    if (!library.some(libItem => libItem.track === item.track && libItem.artist === item.artist)) {
-      const updatedLibrary = [...library, item];
-      setLibrary(updatedLibrary);
-      localStorage.setItem('lyricsLibrary', JSON.stringify(updatedLibrary));
-    }
-  };
-
-  const removeFromLibrary = (track: string, artist: string) => {
-    const updatedLibrary = library.filter(
-      (item) => !(item.track === track && item.artist === artist)
-    );
-    setLibrary(updatedLibrary);
-    localStorage.setItem('lyricsLibrary', JSON.stringify(updatedLibrary));
-  };
-  
-  const isSaved = (track: string, artist: string) => library.some(
-    (item) => item.track === track && item.artist === artist
-  );
+  }, [state.lyrics, state.track, state.artist]);
 
   const LyricsViewer = ({ track, artist, lyrics }: SavedLyric) => {
-    const saved = isSaved(track, artist);
     return (
         <DialogContent className="max-w-2xl">
             <DialogHeader>
@@ -124,14 +61,7 @@ export default function Home() {
                 {lyrics}
                 </pre>
             </ScrollArea>
-            <div className="flex justify-between mt-4">
-              <Button 
-                onClick={() => saved ? removeFromLibrary(track, artist) : saveToLibrary({ track, artist, lyrics })}
-                variant={saved ? "destructive" : "default"}
-              >
-                  {saved ? <Trash2 className="mr-2 h-4 w-4" /> : <BookMarked className="mr-2 h-4 w-4" />}
-                  {saved ? 'Remove from Library' : 'Save to Library'}
-              </Button>
+            <div className="flex justify-end mt-4">
               <DialogClose asChild>
                 <Button type="button" variant="secondary">
                     Close
@@ -144,108 +74,59 @@ export default function Home() {
   
 
   return (
-    <div className="flex flex-col min-h-dvh bg-background text-foreground">
-      <header className="py-6">
-        <div className="container mx-auto flex items-center justify-center gap-3">
-          <Music2 className="h-8 w-8 text-primary" />
-          <h1 className="text-3xl md:text-4xl font-headline font-bold tracking-tighter">
-            Lyric Land
-          </h1>
+    <div className="flex flex-col items-center justify-center min-h-dvh bg-background text-foreground p-4">
+      <div className="w-full max-w-2xl flex flex-col items-center gap-8">
+        
+        <div className="flex flex-col items-center gap-4">
+          <div className="bg-primary text-primary-foreground p-4 rounded-lg w-24 h-24 flex flex-col items-center justify-center">
+             <h1 className="text-2xl font-bold tracking-tighter">LRC</h1>
+             <h2 className="text-2xl font-bold tracking-tighter">LIB</h2>
+          </div>
         </div>
-      </header>
-      <main className="flex-1 container mx-auto px-4 pb-8">
-        <div className="max-w-2xl mx-auto space-y-8">
-          <Card className="shadow-lg">
-            <form action={formAction}>
-              <CardHeader>
-                <CardTitle className="font-headline">Find & Save Lyrics</CardTitle>
-                <CardDescription>
-                  Enter a track and artist name below. Both fields are required to find lyrics and add them to your library.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="track">Track Name</Label>
-                  <Input
+
+        <form action={formAction} className="w-full">
+            <div className="relative">
+                <Input
                     id="track"
                     name="track"
-                    placeholder="e.g., Bohemian Rhapsody"
+                    placeholder="Search for lyrics..."
+                    className="h-16 pl-6 pr-20 rounded-full text-lg"
                     required
-                  />
+                />
+                <div className="absolute top-1/2 right-2 -translate-y-1/2">
+                    <SubmitButton />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="artist">Artist Name</Label>
-                  <Input
-                    id="artist"
-                    name="artist"
-                    placeholder="e.g., Queen"
-                    required
-                  />
-                </div>
-              </CardContent>
-              <CardFooter>
-                <SubmitButton />
-              </CardFooter>
-            </form>
-          </Card>
+            </div>
+        </form>
 
-          <Dialog open={isLyricDialogOpen} onOpenChange={setIsLyricDialogOpen}>
+        <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm font-medium text-primary/80">
+            <a href="#" className="hover:underline">DOWNLOAD LRCGET</a>
+            <a href="#" className="hover:underline">API DOCUMENTATION</a>
+            <a href="#" className="hover:underline">DATABASE DUMPS</a>
+            <a href="#" className="flex items-center gap-1 hover:underline">
+                DONATION <Heart className="w-3 h-3" />
+            </a>
+        </div>
+        
+        <Button variant="outline" className="rounded-full bg-background/50 border-primary/20 text-primary/80 hover:bg-background hover:text-primary">
+            <Github className="mr-2 h-4 w-4" />
+            LRCLIB IS NOW OPEN-SOURCE!
+        </Button>
+
+        <Dialog open={isLyricDialogOpen} onOpenChange={setIsLyricDialogOpen}>
             {state?.lyrics && state.track && state.artist && (
               <LyricsViewer track={state.track} artist={state.artist} lyrics={state.lyrics} />
             )}
-          </Dialog>
+        </Dialog>
 
-
-          {state?.error && (
-            <Alert variant="destructive" className="animate-in fade-in duration-500">
+        {state?.error && (
+            <Alert variant="destructive" className="mt-8 animate-in fade-in duration-500 max-w-md">
               <AlertTitle>Error</AlertTitle>
               <AlertDescription>{state.error}</AlertDescription>
             </Alert>
           )}
-          
-          <div className="pt-8">
-            <h2 className="text-2xl font-headline font-bold flex items-center gap-2 mb-4">
-              <Library />
-              My Bookshelf
-            </h2>
-            {library.length > 0 ? (
-                <div className="w-full bg-stone-200 dark:bg-stone-800 p-4 rounded-lg">
-                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-4 items-end min-h-[240px] border-b-8 border-stone-500/50 pb-2">
-                        {library.map((item) => (
-                        <Dialog key={`${item.track}-${item.artist}`}>
-                            <DialogTrigger asChild>
-                                <div
-                                    className="group relative h-[220px] w-full cursor-pointer transition-transform duration-200 ease-in-out hover:-translate-y-2 flex flex-col justify-end p-2 rounded-t-md rounded-b-sm shadow-md text-primary-foreground"
-                                    style={{ backgroundColor: getColorFromString(item.track) }}
-                                >
-                                    <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                       <BookOpen size={16} />
-                                    </div>
-                                    <div className="[writing-mode:vertical-rl] transform rotate-180 text-center whitespace-nowrap text-xs font-bold uppercase tracking-wider text-black/70">
-                                       <p className="truncate">{item.track}</p>
-                                    </div>
-                                    <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-full text-center">
-                                      <p className="text-xs font-medium text-black/60 truncate px-1">{item.artist}</p>
-                                    </div>
-                                </div>
-                            </DialogTrigger>
-                            <LyricsViewer {...item} />
-                        </Dialog>
-                        ))}
-                    </div>
-                </div>
-            ) : (
-               <div className="text-center text-muted-foreground py-8 border-2 border-dashed rounded-lg">
-                <p>Your bookshelf is empty.</p>
-                <p className="text-sm">Search for lyrics to add books to your shelf.</p>
-              </div>
-            )}
-          </div>
-        </div>
-      </main>
-      <footer className="text-center p-4 text-sm text-muted-foreground">
-        <p>Powered by LRCLIB and Lyrics.ovh</p>
-      </footer>
+
+      </div>
     </div>
   );
 }
