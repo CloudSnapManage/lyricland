@@ -5,7 +5,7 @@ import { useFormStatus } from 'react-dom';
 import { searchLyrics } from '@/app/actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Loader2, Search, Music, User, Library } from 'lucide-react';
+import { Loader2, Search, Music, User, Library, Download } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -84,6 +84,21 @@ export default function Home() {
     return library.some(item => item.track === track && item.artist === artist);
   }
 
+  const handleDownload = (lyrics: string, track: string, artist: string) => {
+    if (!lyrics || !track || !artist) return;
+    
+    const filename = `${track} by (${artist})Lyrics.txt`;
+    const blob = new Blob([lyrics], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   const handleFocus = () => setIsSearchActive(true);
   const handleBlur = (e: React.FocusEvent<HTMLFormElement>) => {
     if (!e.currentTarget.contains(e.relatedTarget as Node)) {
@@ -99,7 +114,7 @@ export default function Home() {
                 <svg width="56" height="56" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" strokeWidth="1.5" className="h-12 w-12 sm:h-16 sm:w-16">
                     <path d="M12 1.5C5.64873 1.5 0.5 6.64873 0.5 13C0.5 19.3513 5.64873 24.5 12 24.5C18.3513 24.5 23.5 19.3513 23.5 13C23.5 10.1561 22.446 7.55416 20.6924 5.5H19.5V2.5H20.9381C21.4029 2.94028 21.8213 3.41803 22.1864 3.92601L19.5 6.61237V9.5H16.5L14.0739 6.88763C13.4344 6.67876 12.7312 6.5 12 6.5C9.09841 6.5 6.7844 8.68069 6.51706 11.5H9.5V14.5H6.51706C6.7844 17.3193 9.09841 19.5 12 19.5C14.9016 19.5 17.2156 17.3193 17.4829 14.5H14.5V11.5H17.4829C17.2156 8.68069 14.9016 6.5 12 6.5" transform="translate(-0.000003, -1.5)"/>
                 </svg>
-                <h1 className="font-headline text-2xl sm:text-3xl font-bold text-foreground">Lyric Library</h1>
+                <h1 className="font-headline text-3xl sm:text-4xl font-bold text-foreground">Lyric Library</h1>
                  <p className="text-muted-foreground text-center max-w-md text-sm sm:text-base">Search for song lyrics by track and artist to add them to your personal library.</p>
             </div>
 
@@ -156,6 +171,10 @@ export default function Home() {
                         <pre className="whitespace-pre-wrap font-body text-sm leading-relaxed pr-6">{state.lyrics}</pre>
                     </ScrollArea>
                     <div className="flex justify-end gap-2 mt-4">
+                        <Button type="button" variant="ghost" onClick={() => handleDownload(state.lyrics!, state.track!, state.artist!)}>
+                            <Download className="mr-2 h-4 w-4" />
+                            Download
+                        </Button>
                         <DialogClose asChild><Button type="button" variant="secondary">Close</Button></DialogClose>
                         {!isSaved(state.track, state.artist) && (
                             <Button onClick={saveToLibrary}>Save to Library</Button>
@@ -195,6 +214,10 @@ export default function Home() {
                         <pre className="whitespace-pre-wrap font-body text-sm leading-relaxed pr-6">{activeBook?.lyrics}</pre>
                     </ScrollArea>
                     <div className="flex justify-end gap-2 mt-4">
+                        <Button type="button" variant="ghost" onClick={() => handleDownload(activeBook!.lyrics!, activeBook!.track!, activeBook!.artist!)}>
+                           <Download className="mr-2 h-4 w-4" />
+                           Download
+                        </Button>
                         <Button type="button" variant="secondary" onClick={() => setActiveBook(null)}>Close</Button>
                         <Button variant="destructive" onClick={() => activeBook && removeFromLibrary(activeBook.track!, activeBook.artist!)}>Remove from Library</Button>
                     </div>
@@ -203,4 +226,3 @@ export default function Home() {
         </div>
     </div>
   );
-}
