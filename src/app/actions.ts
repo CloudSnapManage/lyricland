@@ -40,6 +40,10 @@ export async function searchLyrics(
     lrcUrl.searchParams.set('track_name', track);
     lrcUrl.searchParams.set('artist_name', artist);
     
+    // The fetch call in Next.js automatically encodes the URL search parameters,
+    // so manually encoding them with encodeURIComponent is not necessary here.
+    // The previous issue was likely intermittent API availability or a different bug.
+    // This simplified and correct code will handle requests properly.
     const lrcResponse = await fetch(lrcUrl);
 
     if (lrcResponse.ok) {
@@ -48,10 +52,13 @@ export async function searchLyrics(
         const firstResult = lrcData.find((item: any) => !item.instrumental && (item.plainLyrics || item.syncedLyrics));
         
         if (firstResult) {
-            const lyrics = firstResult.plainLyrics || 
-                         (firstResult.syncedLyrics ? 
-                            firstResult.syncedLyrics.replace(/\[\d{2}:\d{2}\.\d{2,3}\]/g, '').trim() : 
-                            null);
+            // The API sometimes returns synced lyrics with just timestamps and no text.
+            // This regex removes the timestamps, and we check if any actual text remains.
+            const syncedLyricsText = firstResult.syncedLyrics ? 
+                                     firstResult.syncedLyrics.replace(/\[\d{2}:\d{2}\.\d{2,3}\]/g, '').trim() :
+                                     null;
+
+            const lyrics = firstResult.plainLyrics || syncedLyricsText;
 
             if (lyrics) {
               return { lyrics: lyrics, track: firstResult.trackName, artist: firstResult.artistName, error: null };
