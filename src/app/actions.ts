@@ -49,7 +49,7 @@ export async function searchLyrics(
         if (firstResult && !firstResult.instrumental) {
           const lyrics = firstResult.plainLyrics || 
                          (firstResult.syncedLyrics ? 
-                            firstResult.syncedLyrics.replace(/\\\[\d{2}:\d{2}\.\d{2,3}\\\]/g, '').trim() : 
+                            firstResult.syncedLyrics.replace(/\[\d{2}:\d{2}\.\d{2,3}\]/g, '').trim() : 
                             null);
 
           if (lyrics) {

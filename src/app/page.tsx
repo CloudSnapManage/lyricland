@@ -10,7 +10,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
-import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -26,8 +26,8 @@ export default function Home() {
   const [state, formAction] = useActionState(searchLyrics, initialState);
   
   const [isLyricDialogOpen, setIsLyricDialogOpen] = useState(false);
-  const [library, setLibrary] = useState<typeof initialState[]>([]);
-  const [activeBook, setActiveBook] = useState<any>(null);
+  const [library, setLibrary] = useState<(typeof initialState)[]>([]);
+  const [activeBook, setActiveBook] = useState<typeof initialState | null>(null);
   const [isSearchActive, setIsSearchActive] = useState(false);
 
   useEffect(() => {
@@ -72,18 +72,10 @@ export default function Home() {
     setActiveBook(null);
   };
 
-  const isSaved = (track: string, artist: string) => {
+  const isSaved = (track: string | null, artist: string | null) => {
+    if (!track || !artist) return false;
     return library.some(item => item.track === track && item.artist === artist);
   }
-
-  const handleTrackInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.value.length > 0) {
-      setIsSearchActive(true);
-    } else {
-      setIsSearchActive(false);
-    }
-  };
-
 
   return (
     <div className="flex flex-col items-center justify-center min-h-dvh bg-background text-foreground p-4 font-body">
@@ -94,11 +86,12 @@ export default function Home() {
                     <path d="M12 1.5C5.64873 1.5 0.5 6.64873 0.5 13C0.5 19.3513 5.64873 24.5 12 24.5C18.3513 24.5 23.5 19.3513 23.5 13C23.5 10.1561 22.446 7.55416 20.6924 5.5H19.5V2.5H20.9381C21.4029 2.94028 21.8213 3.41803 22.1864 3.92601L19.5 6.61237V9.5H16.5L14.0739 6.88763C13.4344 6.67876 12.7312 6.5 12 6.5C9.09841 6.5 6.7844 8.68069 6.51706 11.5H9.5V14.5H6.51706C6.7844 17.3193 9.09841 19.5 12 19.5C14.9016 19.5 17.2156 17.3193 17.4829 14.5H14.5V11.5H17.4829C17.2156 8.68069 14.9016 6.5 12 6.5" transform="translate(-0.000003, -1.5)"/>
                 </svg>
                 <h1 className="font-headline text-3xl font-bold text-foreground">Lyric Library</h1>
+                 <p className="text-muted-foreground text-center max-w-md">Search for song lyrics by track and artist to add them to your personal library.</p>
             </div>
 
-            <form action={formAction} className="w-full">
-              <Collapsible open={true} className="w-full">
-                  <div className={cn("p-2 rounded-full flex items-center gap-2 border bg-card transition-all duration-500", isSearchActive && "shadow-lg")}>
+            <form action={formAction} className="w-full" onFocus={() => setIsSearchActive(true)} onBlur={() => setIsSearchActive(false)}>
+              <Collapsible open={true} className="w-full space-y-2">
+                  <div className={cn("p-2 rounded-full flex items-center gap-2 border bg-card transition-shadow", isSearchActive && "shadow-lg")}>
                       <div className="flex-grow pl-4">
                           <div className="relative flex items-center">
                               <Music className="h-5 w-5 absolute left-0 text-muted-foreground" />
@@ -108,9 +101,6 @@ export default function Home() {
                                   placeholder="Track name..."
                                   className="h-12 bg-transparent border-none pl-8 !ring-0 !ring-offset-0"
                                   required
-                                  onChange={handleTrackInputChange}
-                                  onFocus={() => setIsSearchActive(true)}
-                                  onBlur={() => setIsSearchActive(document.activeElement?.closest('form') === document.querySelector('form'))}
                               />
                           </div>
                       </div>
@@ -118,7 +108,7 @@ export default function Home() {
                   </div>
 
                   <CollapsibleContent forceMount className={cn("transition-all duration-500 ease-in-out overflow-hidden", isSearchActive ? 'max-h-24' : 'max-h-0')}>
-                      <div className="p-2 rounded-full flex items-center gap-2 border bg-card mt-2">
+                      <div className="p-2 rounded-full flex items-center gap-2 border bg-card">
                           <div className="flex-grow pl-4">
                               <div className="relative flex items-center">
                                   <User className="h-5 w-5 absolute left-0 text-muted-foreground" />
@@ -154,7 +144,7 @@ export default function Home() {
                     </ScrollArea>
                     <div className="flex justify-end gap-2 mt-4">
                         <DialogClose asChild><Button type="button" variant="secondary">Close</Button></DialogClose>
-                        {state.track && state.artist && !isSaved(state.track, state.artist) && (
+                        {!isSaved(state.track, state.artist) && (
                             <Button onClick={saveToLibrary}>Save to Library</Button>
                         )}
                     </div>
@@ -193,7 +183,7 @@ export default function Home() {
                     </ScrollArea>
                     <div className="flex justify-end gap-2 mt-4">
                         <Button type="button" variant="secondary" onClick={() => setActiveBook(null)}>Close</Button>
-                        <Button variant="destructive" onClick={() => removeFromLibrary(activeBook.track, activeBook.artist)}>Remove from Library</Button>
+                        <Button variant="destructive" onClick={() => activeBook && removeFromLibrary(activeBook.track!, activeBook.artist!)}>Remove from Library</Button>
                     </div>
                 </DialogContent>
             </Dialog>
@@ -201,5 +191,3 @@ export default function Home() {
     </div>
   );
 }
-
-    

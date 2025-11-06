@@ -126,7 +126,7 @@
       text-orientation: mixed;
       transform: rotate(180deg);
       text-align: right;
-      color: hsl(var(--primary-foreground));
+      color: hsl(var(--card-foreground));
   }
   .book-title {
       font-family: var(--font-headline), sans-serif;
