@@ -14,11 +14,10 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, Music2, Search, BookMarked, Trash2, Library, X, BookOpen } from 'lucide-react';
+import { Loader2, Music2, Search, BookMarked, Trash2, Library, BookOpen, ExternalLink, View } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription, DialogClose } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { cn } from '@/lib/utils';
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -63,9 +62,18 @@ export default function Home() {
     track: null,
     artist: null,
     error: null,
+    message: null,
   };
   const [state, formAction] = useActionState(searchLyrics, initialState);
   const [library, setLibrary] = useState<SavedLyric[]>([]);
+  const [isLyricDialogOpen, setIsLyricDialogOpen] = useState(false);
+
+  useEffect(() => {
+    if (state.lyrics) {
+      setIsLyricDialogOpen(true);
+    }
+  }, [state.lyrics, state.track, state.artist]);
+  
 
   useEffect(() => {
     try {
@@ -78,15 +86,12 @@ export default function Home() {
     }
   }, []);
 
-  const saveToLibrary = () => {
-    if (state.lyrics && state.track && state.artist) {
-      const newEntry = { track: state.track, artist: state.artist, lyrics: state.lyrics };
-      // Prevent duplicates
-      if (!library.some(item => item.track === newEntry.track && item.artist === newEntry.artist)) {
-        const updatedLibrary = [...library, newEntry];
-        setLibrary(updatedLibrary);
-        localStorage.setItem('lyricsLibrary', JSON.stringify(updatedLibrary));
-      }
+  const saveToLibrary = (item: SavedLyric) => {
+    // Prevent duplicates
+    if (!library.some(libItem => libItem.track === item.track && libItem.artist === item.artist)) {
+      const updatedLibrary = [...library, item];
+      setLibrary(updatedLibrary);
+      localStorage.setItem('lyricsLibrary', JSON.stringify(updatedLibrary));
     }
   };
 
@@ -98,9 +103,41 @@ export default function Home() {
     localStorage.setItem('lyricsLibrary', JSON.stringify(updatedLibrary));
   };
   
-  const isSaved = state.track && state.artist && library.some(
-    (item) => item.track === state.track && item.artist === state.artist
+  const isSaved = (track: string, artist: string) => library.some(
+    (item) => item.track === track && item.artist === artist
   );
+
+  const LyricsViewer = ({ track, artist, lyrics }: SavedLyric) => {
+    const saved = isSaved(track, artist);
+    return (
+        <DialogContent className="max-w-2xl">
+            <DialogHeader>
+                <DialogTitle>{track}</DialogTitle>
+                <DialogDescription>{artist}</DialogDescription>
+            </DialogHeader>
+            <ScrollArea className="h-[60vh] mt-4">
+                <pre className="whitespace-pre-wrap font-body text-sm leading-relaxed pr-6">
+                {lyrics}
+                </pre>
+            </ScrollArea>
+            <div className="flex justify-between mt-4">
+              <Button 
+                onClick={() => saved ? removeFromLibrary(track, artist) : saveToLibrary({ track, artist, lyrics })}
+                variant={saved ? "destructive" : "default"}
+              >
+                  {saved ? <Trash2 className="mr-2 h-4 w-4" /> : <BookMarked className="mr-2 h-4 w-4" />}
+                  {saved ? 'Remove from Library' : 'Save to Library'}
+              </Button>
+              <DialogClose asChild>
+                <Button type="button" variant="secondary">
+                    Close
+                </Button>
+              </DialogClose>
+            </div>
+        </DialogContent>
+    );
+  };
+  
 
   return (
     <div className="flex flex-col min-h-dvh bg-background text-foreground">
@@ -119,7 +156,7 @@ export default function Home() {
               <CardHeader>
                 <CardTitle className="font-headline">Find & Save Lyrics</CardTitle>
                 <CardDescription>
-                  Enter a track and artist name below. Both fields are required.
+                  Enter a track and artist name below. Both fields are required to add songs to your library.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -148,27 +185,12 @@ export default function Home() {
             </form>
           </Card>
 
-          {state?.lyrics && (
-            <Card className="shadow-lg animate-in fade-in duration-500">
-              <CardHeader>
-                <div className="flex justify-between items-start">
-                  <div>
-                    <CardTitle className="font-headline">{state.track}</CardTitle>
-                    <CardDescription>{state.artist}</CardDescription>
-                  </div>
-                  <Button onClick={saveToLibrary} disabled={!!isSaved} size="sm" variant="outline">
-                    <BookMarked className="mr-2" />
-                    {isSaved ? 'Saved' : 'Save to Library'}
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <pre className="whitespace-pre-wrap font-body text-sm leading-relaxed">
-                  {state.lyrics}
-                </pre>
-              </CardContent>
-            </Card>
-          )}
+          <Dialog open={isLyricDialogOpen} onOpenChange={setIsLyricDialogOpen}>
+            {state?.lyrics && state.track && state.artist && (
+              <LyricsViewer track={state.track} artist={state.artist} lyrics={state.lyrics} />
+            )}
+          </Dialog>
+
 
           {state?.error && (
             <Alert variant="destructive" className="animate-in fade-in duration-500">
@@ -185,7 +207,7 @@ export default function Home() {
             {library.length > 0 ? (
                 <div className="w-full bg-stone-200 dark:bg-stone-800 p-4 rounded-lg">
                     <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-4 items-end min-h-[240px] border-b-8 border-stone-500/50 pb-2">
-                        {library.map((item, index) => (
+                        {library.map((item) => (
                         <Dialog key={`${item.track}-${item.artist}`}>
                             <DialogTrigger asChild>
                                 <div
@@ -203,28 +225,7 @@ export default function Home() {
                                     </div>
                                 </div>
                             </DialogTrigger>
-                            <DialogContent className="max-w-2xl">
-                                <DialogHeader>
-                                    <DialogTitle>{item.track}</DialogTitle>
-                                    <DialogDescription>{item.artist}</DialogDescription>
-                                </DialogHeader>
-                                <ScrollArea className="h-[60vh] mt-4">
-                                    <pre className="whitespace-pre-wrap font-body text-sm leading-relaxed pr-6">
-                                    {item.lyrics}
-                                    </pre>
-                                </ScrollArea>
-                                <div className="flex justify-between mt-4">
-                                  <Button onClick={() => removeFromLibrary(item.track, item.artist)} variant="destructive">
-                                      <Trash2 className="mr-2 h-4 w-4" />
-                                      Remove
-                                  </Button>
-                                  <DialogClose asChild>
-                                    <Button type="button" variant="secondary">
-                                        Close
-                                    </Button>
-                                  </DialogClose>
-                                </div>
-                            </DialogContent>
+                            <LyricsViewer {...item} />
                         </Dialog>
                         ))}
                     </div>
