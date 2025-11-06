@@ -72,8 +72,10 @@ export default function Home() {
     // This effect now correctly triggers the dialog when a search is successful.
     if (state.lyrics && state.track && state.artist) {
       setIsLyricDialogOpen(true);
+    } else {
+      setIsLyricDialogOpen(false);
     }
-  }, [state.lyrics, state.track, state.artist]);
+  }, [state]);
   
 
   useEffect(() => {
