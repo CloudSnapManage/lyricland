@@ -5,7 +5,7 @@ import { useFormStatus } from 'react-dom';
 import { searchLyrics } from '@/app/actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Loader2, Search, Music, User, Library, Download } from 'lucide-react';
+import { Loader2, Search, Music, User, Library, Download, Youtube } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -98,10 +98,17 @@ export default function Home() {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   };
+
+  const handleListenOnYouTube = (track: string, artist: string) => {
+    const query = encodeURIComponent(`${track} by ${artist}`);
+    const url = `https://www.youtube.com/results?search_query=${query}`;
+    window.open(url, '_blank');
+  };
   
   const handleFocus = () => setIsSearchActive(true);
   const handleBlur = (e: React.FocusEvent<HTMLFormElement>) => {
-    if (!e.currentTarget.contains(e.relatedTarget)) {
+    // Check if the newly focused element is outside the form
+    if (!e.currentTarget.contains(e.relatedTarget as Node | null)) {
         setIsSearchActive(false);
     }
   };
@@ -169,6 +176,10 @@ export default function Home() {
                         <pre className="whitespace-pre-wrap font-body text-sm leading-relaxed pr-6">{state.lyrics}</pre>
                     </ScrollArea>
                     <div className="flex justify-end gap-2 mt-4">
+                        <Button type="button" variant="ghost" onClick={() => handleListenOnYouTube(state.track!, state.artist!)}>
+                            <Youtube className="mr-2 h-4 w-4" />
+                            Listen
+                        </Button>
                         <Button type="button" variant="ghost" onClick={() => handleDownload(state.lyrics!, state.track!, state.artist!)}>
                             <Download className="mr-2 h-4 w-4" />
                             Download
@@ -213,6 +224,10 @@ export default function Home() {
 
                     </ScrollArea>
                     <div className="flex justify-end gap-2 mt-4">
+                         <Button type="button" variant="ghost" onClick={() => handleListenOnYouTube(activeBook!.track!, activeBook!.artist!)}>
+                            <Youtube className="mr-2 h-4 w-4" />
+                            Listen
+                        </Button>
                         <Button type="button" variant="ghost" onClick={() => handleDownload(activeBook!.lyrics!, activeBook!.track!, activeBook!.artist!)}>
                            <Download className="mr-2 h-4 w-4" />
                            Download
@@ -226,5 +241,3 @@ export default function Home() {
     </div>
   );
 }
-
-    
