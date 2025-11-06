@@ -12,7 +12,6 @@ type SearchState = {
 
 const searchSchema = z.object({
   track: z.string().trim().min(1, { message: 'Track name is required.' }),
-  artist: z.string().trim().optional().transform(v => v === '' ? undefined : v),
 });
 
 export async function searchLyrics(
@@ -21,7 +20,6 @@ export async function searchLyrics(
 ): Promise<SearchState> {
   const validatedFields = searchSchema.safeParse({
     track: formData.get('track'),
-    artist: formData.get('artist'),
   });
 
   if (!validatedFields.success) {
@@ -30,18 +28,15 @@ export async function searchLyrics(
       lyrics: null,
       track: null,
       artist: null,
-      error: fieldErrors.track?.[0] || fieldErrors.artist?.[0] || 'Invalid input.',
+      error: fieldErrors.track?.[0] || 'Invalid input.',
     };
   }
 
-  const { track, artist } = validatedFields.data;
+  const { track } = validatedFields.data;
   
   try {
     const lrcUrl = new URL('https://api.lrclib.net/api/search');
     lrcUrl.searchParams.set('track_name', track);
-    if (artist) {
-      lrcUrl.searchParams.set('artist_name', artist);
-    }
     
     const lrcResponse = await fetch(lrcUrl);
 
@@ -63,36 +58,10 @@ export async function searchLyrics(
     }
   } catch (e) {
     console.error('LRCLIB API Error:', e);
-    // Don't return, proceed to the next API or error
+    // Don't return, proceed to the error
   }
 
-  // Fallback to lyrics.ovh ONLY if an artist was provided
-  if (artist) {
-    try {
-      const ovhUrl = `https://api.lyrics.ovh/v1/${encodeURIComponent(
-        artist
-      )}/${encodeURIComponent(track)}`;
-      const ovhResponse = await fetch(ovhUrl);
-
-      if (ovhResponse.ok) {
-        const ovhData = await ovhResponse.json();
-        if (ovhData.lyrics) {
-          const cleanedLyrics = ovhData.lyrics
-            .replace(/Paroles de la chanson .+\n/, '')
-            .trim();
-          return { lyrics: cleanedLyrics, track, artist, error: null };
-        }
-      }
-    } catch (e) {
-      console.error('Lyrics.ovh API Error:', e);
-    }
-  }
-
-  let errorMessage = `Sorry, we couldn't find lyrics for "${track}"`;
-  if(artist) {
-    errorMessage += ` by ${artist}`;
-  }
-  errorMessage += `. Please check the spelling and try again.`;
+  let errorMessage = `Sorry, we couldn't find lyrics for "${track}". Please check the spelling and try again.`;
 
   return {
     lyrics: null,

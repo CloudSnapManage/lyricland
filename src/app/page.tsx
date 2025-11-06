@@ -5,9 +5,9 @@ import { useFormStatus } from 'react-dom';
 import { searchLyrics } from '@/app/actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Loader2, Search, BookMarked, Trash2, Github, Heart } from 'lucide-react';
+import { Loader2, Search } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription, DialogClose } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 function SubmitButton() {
@@ -23,12 +23,6 @@ function SubmitButton() {
     </Button>
   );
 }
-
-type SavedLyric = {
-  track: string;
-  artist: string;
-  lyrics: string;
-};
 
 export default function Home() {
   const initialState = {
@@ -49,16 +43,17 @@ export default function Home() {
     }
   }, [state.lyrics, state.track, state.artist]);
 
-  const LyricsViewer = ({ track, artist, lyrics }: SavedLyric) => {
+  const LyricsViewer = () => {
+    if (!state.lyrics || !state.track || !state.artist) return null;
     return (
         <DialogContent className="max-w-2xl">
             <DialogHeader>
-                <DialogTitle>{track}</DialogTitle>
-                <DialogDescription>{artist}</DialogDescription>
+                <DialogTitle>{state.track}</DialogTitle>
+                <DialogDescription>{state.artist}</DialogDescription>
             </DialogHeader>
             <ScrollArea className="h-[60vh] mt-4">
                 <pre className="whitespace-pre-wrap font-body text-sm leading-relaxed pr-6">
-                {lyrics}
+                {state.lyrics}
                 </pre>
             </ScrollArea>
             <div className="flex justify-end mt-4">
@@ -77,11 +72,23 @@ export default function Home() {
     <div className="flex flex-col items-center justify-center min-h-dvh bg-background text-foreground p-4">
       <div className="w-full max-w-2xl flex flex-col items-center gap-8">
         
-        <div className="flex flex-col items-center gap-4">
-          <div className="bg-primary text-primary-foreground p-4 rounded-lg w-24 h-24 flex flex-col items-center justify-center">
-             <h1 className="text-2xl font-bold tracking-tighter">LRC</h1>
-             <h2 className="text-2xl font-bold tracking-tighter">LIB</h2>
-          </div>
+        <div className="flex flex-col items-center gap-4 text-primary">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="96"
+            height="96"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="h-24 w-24"
+          >
+            <path d="M9 18V5l12-2v13" />
+            <circle cx="6" cy="18" r="3" />
+            <circle cx="18" cy="16" r="3" />
+          </svg>
         </div>
 
         <form action={formAction} className="w-full">
@@ -98,25 +105,9 @@ export default function Home() {
                 </div>
             </div>
         </form>
-
-        <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm font-medium text-primary/80">
-            <a href="#" className="hover:underline">DOWNLOAD LRCGET</a>
-            <a href="#" className="hover:underline">API DOCUMENTATION</a>
-            <a href="#" className="hover:underline">DATABASE DUMPS</a>
-            <a href="#" className="flex items-center gap-1 hover:underline">
-                DONATION <Heart className="w-3 h-3" />
-            </a>
-        </div>
         
-        <Button variant="outline" className="rounded-full bg-background/50 border-primary/20 text-primary/80 hover:bg-background hover:text-primary">
-            <Github className="mr-2 h-4 w-4" />
-            LRCLIB IS NOW OPEN-SOURCE!
-        </Button>
-
         <Dialog open={isLyricDialogOpen} onOpenChange={setIsLyricDialogOpen}>
-            {state?.lyrics && state.track && state.artist && (
-              <LyricsViewer track={state.track} artist={state.artist} lyrics={state.lyrics} />
-            )}
+            <LyricsViewer />
         </Dialog>
 
         {state?.error && (
