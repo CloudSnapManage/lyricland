@@ -31,6 +31,7 @@ export async function searchLyrics(
 
   const { artist, track } = validatedFields.data;
 
+  // 1. Try LRCLIB.NET (works with or without artist)
   try {
     const lrcUrl = new URL('https://api.lrclib.net/api/get');
     if (artist) {
@@ -42,6 +43,7 @@ export async function searchLyrics(
 
     if (lrcResponse.ok) {
       const lrcData = await lrcResponse.json();
+      // Check for various successful responses from this API
       if (lrcData && !lrcData.instrumental) {
         if (lrcData.plainLyrics) {
           return { lyrics: lrcData.plainLyrics, error: null };
@@ -58,9 +60,10 @@ export async function searchLyrics(
     }
   } catch (e) {
     console.error('LRCLIB API Error:', e);
+    // Don't return here, just log and proceed to the next API
   }
   
-  // Only try lyrics.ovh if artist is provided, as it's required by that API
+  // 2. Try lyrics.ovh if artist is provided
   if(artist) {
       try {
         const ovhUrl = `https://api.lyrics.ovh/v1/${encodeURIComponent(
@@ -79,10 +82,7 @@ export async function searchLyrics(
         }
       } catch (e) {
         console.error('Lyrics.ovh API Error:', e);
-        return {
-          lyrics: null,
-          error: 'An unexpected network error occurred. Please try again.',
-        };
+        // Don't return here, just log and proceed to the final message
       }
   }
 
@@ -90,6 +90,6 @@ export async function searchLyrics(
   // 3. If all APIs fail
   return {
     lyrics: null,
-    error: `Sorry, we couldn't find lyrics for that song. Please check the track name or try the advanced search.`,
+    error: `Sorry, we couldn't find lyrics for "${track}". Please check the spelling or try the advanced search with an artist.`,
   };
 }
