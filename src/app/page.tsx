@@ -1,6 +1,7 @@
 'use client';
 
-import { useFormState, useFormStatus } from 'react-dom';
+import { useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import { searchLyrics } from '@/app/actions';
 import { Button } from '@/components/ui/button';
 import {
@@ -42,7 +43,7 @@ export default function Home() {
     error: null,
     message: 'Enter an artist and song to find the lyrics.',
   };
-  const [state, formAction] = useFormState(searchLyrics, initialState);
+  const [state, formAction] = useActionState(searchLyrics, initialState);
 
   return (
     <div className="flex flex-col min-h-dvh bg-background text-foreground">
