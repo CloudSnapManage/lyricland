@@ -48,6 +48,7 @@ export async function searchLyrics(
         if (lrcData.plainLyrics) {
           return { lyrics: lrcData.plainLyrics, error: null };
         }
+        // Fallback for synced lyrics if plain lyrics aren't available
         if (lrcData.syncedLyrics) {
           const plain = lrcData.syncedLyrics
             .replace(/\[\d{2}:\d{2}\.\d{2,3}\]/g, '')
@@ -90,6 +91,6 @@ export async function searchLyrics(
   // 3. If all APIs fail
   return {
     lyrics: null,
-    error: `Sorry, we couldn't find lyrics for "${track}". Please check the spelling or try the advanced search with an artist.`,
+    error: `Sorry, we couldn't find lyrics for "${track}". Please check the spelling or try adding an artist name in the advanced search.`,
   };
 }

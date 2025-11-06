@@ -58,72 +58,50 @@ export default function Home() {
       </header>
       <main className="flex-1 container mx-auto px-4 pb-8">
         <div className="max-w-2xl mx-auto space-y-8">
-          <Card className="shadow-lg">
-            <form action={formAction}>
-              <CardHeader>
-                <CardTitle className="font-headline">Find Lyrics</CardTitle>
-                <CardDescription>
-                  Enter a track name below.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                 <div className="space-y-2">
-                  <Label htmlFor="track-main">Track Name</Label>
-                  <Input
-                    id="track-main"
-                    name="track"
-                    placeholder="e.g., Bohemian Rhapsody"
-                    required
-                  />
-                </div>
-              </CardContent>
-              <CardFooter>
-                <SubmitButton />
-              </CardFooter>
-            </form>
-          </Card>
-          
-          <Accordion type="single" collapsible className="w-full">
-            <AccordionItem value="item-1">
-              <AccordionTrigger>
-                <span className="text-sm font-medium">Advanced Search</span>
-              </AccordionTrigger>
-              <AccordionContent>
-                <Card>
-                   <form action={formAction}>
-                    <CardHeader>
-                      <CardDescription>
-                        For a more specific search, provide both artist and track.
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="artist">Artist</Label>
-                        <Input
-                          id="artist"
-                          name="artist"
-                          placeholder="e.g., Queen"
-                          required
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="track">Track Name</Label>
-                        <Input
-                          id="track"
-                          name="track"
-                          placeholder="e.g., Bohemian Rhapsody"
-                          required
-                        />
-                      </div>
-                    </CardContent>
-                    <CardFooter>
-                      <SubmitButton />
-                    </CardFooter>
-                  </form>
-                </Card>
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
+           <form action={formAction}>
+              <Card className="shadow-lg">
+                <CardHeader>
+                  <CardTitle className="font-headline">Find Lyrics</CardTitle>
+                  <CardDescription>
+                    Enter a track name below to search for its lyrics.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="track">Track Name</Label>
+                    <Input
+                      id="track"
+                      name="track"
+                      placeholder="e.g., Bohemian Rhapsody"
+                      required
+                    />
+                  </div>
+                   <Accordion type="single" collapsible className="w-full pt-2">
+                      <AccordionItem value="item-1">
+                        <AccordionTrigger>
+                          <span className="text-sm font-medium">Advanced Search</span>
+                        </AccordionTrigger>
+                        <AccordionContent>
+                            <CardDescription className="pb-4">
+                              For a more specific search, provide an artist name.
+                            </CardDescription>
+                            <div className="space-y-2">
+                              <Label htmlFor="artist">Artist Name</Label>
+                              <Input
+                                id="artist"
+                                name="artist"
+                                placeholder="e.g., Queen"
+                              />
+                            </div>
+                        </AccordionContent>
+                      </AccordionItem>
+                    </Accordion>
+                </CardContent>
+                <CardFooter>
+                  <SubmitButton />
+                </CardFooter>
+              </Card>
+          </form>
 
           <div className="animate-in fade-in duration-500">
             {state?.lyrics && (
