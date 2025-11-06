@@ -198,7 +198,7 @@ export default function Home() {
                         <Library className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
                         <h2 className="text-xl sm:text-2xl font-bold text-foreground">Your Library</h2>
                     </div>
-                    <div className="bookshelf">
+                    <div className="shelf">
                         {library.map((item, index) => (
                             <div key={`${item.track}-${item.artist}-${index}`} className="book" style={{'--book-color': `hsl(${index * 35}, 60%, 70%)`} as React.CSSProperties} onClick={() => setActiveBook(item)}>
                                 <div className="book-spine">
