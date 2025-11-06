@@ -21,13 +21,20 @@ function SubmitButton() {
   );
 }
 
+type LyricEntry = {
+    lyrics: string | null;
+    track: string | null;
+    artist: string | null;
+    error: string | null;
+};
+
 export default function Home() {
-  const initialState = { lyrics: null, track: null, artist: null, error: null };
+  const initialState: LyricEntry = { lyrics: null, track: null, artist: null, error: null };
   const [state, formAction] = useActionState(searchLyrics, initialState);
   
   const [isLyricDialogOpen, setIsLyricDialogOpen] = useState(false);
-  const [library, setLibrary] = useState<(typeof initialState)[]>([]);
-  const [activeBook, setActiveBook] = useState<typeof initialState | null>(null);
+  const [library, setLibrary] = useState<LyricEntry[]>([]);
+  const [activeBook, setActiveBook] = useState<LyricEntry | null>(null);
   const [isSearchActive, setIsSearchActive] = useState(false);
 
   useEffect(() => {
@@ -66,7 +73,7 @@ export default function Home() {
       setIsLyricDialogOpen(false);
     }
   };
-
+  
   const removeFromLibrary = (track: string, artist: string) => {
     setLibrary(prev => prev.filter(item => item.track !== track || item.artist !== artist));
     setActiveBook(null);
@@ -76,6 +83,13 @@ export default function Home() {
     if (!track || !artist) return false;
     return library.some(item => item.track === track && item.artist === artist);
   }
+
+  const handleFocus = () => setIsSearchActive(true);
+  const handleBlur = (e: React.FocusEvent<HTMLFormElement>) => {
+    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+        setIsSearchActive(false);
+    }
+  };
 
   return (
     <div className="flex flex-col items-center justify-center min-h-dvh bg-background text-foreground p-4 font-body">
@@ -89,41 +103,41 @@ export default function Home() {
                  <p className="text-muted-foreground text-center max-w-md">Search for song lyrics by track and artist to add them to your personal library.</p>
             </div>
 
-            <form action={formAction} className="w-full" onFocus={() => setIsSearchActive(true)} onBlur={() => setIsSearchActive(false)}>
-              <Collapsible open={true} className="w-full space-y-2">
-                  <div className={cn("p-2 rounded-full flex items-center gap-2 border bg-card transition-shadow", isSearchActive && "shadow-lg")}>
-                      <div className="flex-grow pl-4">
-                          <div className="relative flex items-center">
-                              <Music className="h-5 w-5 absolute left-0 text-muted-foreground" />
-                              <Input
-                                  id="track"
-                                  name="track"
-                                  placeholder="Track name..."
-                                  className="h-12 bg-transparent border-none pl-8 !ring-0 !ring-offset-0"
-                                  required
-                              />
-                          </div>
-                      </div>
-                      <SubmitButton />
-                  </div>
+            <form action={formAction} className="w-full" onFocus={handleFocus} onBlur={handleBlur}>
+                <Collapsible open={true} className="w-full space-y-2">
+                    <div className={cn("p-2 rounded-full flex items-center gap-2 border bg-card transition-shadow", isSearchActive && "shadow-lg")}>
+                        <div className="flex-grow pl-4">
+                            <div className="relative flex items-center">
+                                <Music className="h-5 w-5 absolute left-0 text-muted-foreground" />
+                                <Input
+                                    id="track"
+                                    name="track"
+                                    placeholder="Track name..."
+                                    className="h-12 bg-transparent border-none pl-8 !ring-0 !ring-offset-0"
+                                    required
+                                />
+                            </div>
+                        </div>
+                        <SubmitButton />
+                    </div>
 
-                  <CollapsibleContent forceMount className={cn("transition-all duration-500 ease-in-out overflow-hidden", isSearchActive ? 'max-h-24' : 'max-h-0')}>
-                      <div className={cn("p-2 rounded-full flex items-center gap-2 border bg-card transition-shadow", isSearchActive && "shadow-lg")}>
-                          <div className="flex-grow pl-4">
-                              <div className="relative flex items-center">
-                                  <User className="h-5 w-5 absolute left-0 text-muted-foreground" />
-                                  <Input
-                                      id="artist"
-                                      name="artist"
-                                      placeholder="Artist name..."
-                                      className="h-12 bg-transparent border-none pl-8 !ring-0 !ring-offset-0"
-                                      required
-                                  />
-                              </div>
-                          </div>
-                      </div>
-                  </CollapsibleContent>
-              </Collapsible>
+                    <CollapsibleContent forceMount className={cn("transition-all duration-500 ease-in-out overflow-hidden", isSearchActive ? 'max-h-24' : 'max-h-0')}>
+                        <div className={cn("p-2 rounded-full flex items-center gap-2 border bg-card transition-shadow", isSearchActive && "shadow-lg")}>
+                            <div className="flex-grow pl-4">
+                                <div className="relative flex items-center">
+                                    <User className="h-5 w-5 absolute left-0 text-muted-foreground" />
+                                    <Input
+                                        id="artist"
+                                        name="artist"
+                                        placeholder="Artist name..."
+                                        className="h-12 bg-transparent border-none pl-8 !ring-0 !ring-offset-0"
+                                        required
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </CollapsibleContent>
+                </Collapsible>
             </form>
 
             {state?.error && (
@@ -160,7 +174,7 @@ export default function Home() {
                     </div>
                     <div className="bookshelf">
                         {library.map((item, index) => (
-                            <div key={index} className="book" style={{'--book-color': `hsl(${index * 35}, 60%, 70%)`} as React.CSSProperties} onClick={() => setActiveBook(item)}>
+                            <div key={`${item.track}-${item.artist}-${index}`} className="book" style={{'--book-color': `hsl(${index * 35}, 60%, 70%)`} as React.CSSProperties} onClick={() => setActiveBook(item)}>
                                 <div className="book-spine">
                                     <div className="book-title">{item.track}</div>
                                     <div className="book-artist">{item.artist}</div>
@@ -172,7 +186,7 @@ export default function Home() {
             )}
 
             {/* Library Item Viewer */}
-            <Dialog open={!!activeBook} onOpenChange={() => setActiveBook(null)}>
+            <Dialog open={!!activeBook} onOpenChange={(isOpen) => !isOpen && setActiveBook(null)}>
                 <DialogContent className="max-w-2xl">
                     <DialogHeader>
                         <DialogTitle>{activeBook?.track}</DialogTitle>

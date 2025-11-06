@@ -45,21 +45,23 @@ export async function searchLyrics(
     if (lrcResponse.ok) {
       const lrcData = await lrcResponse.json();
       if (lrcData && lrcData.length > 0) {
-        const firstResult = lrcData[0];
-        if (firstResult && !firstResult.instrumental) {
-          const lyrics = firstResult.plainLyrics || 
+        const firstResult = lrcData.find((item: any) => !item.instrumental && (item.plainLyrics || item.syncedLyrics));
+        
+        if (firstResult) {
+            const lyrics = firstResult.plainLyrics || 
                          (firstResult.syncedLyrics ? 
                             firstResult.syncedLyrics.replace(/\[\d{2}:\d{2}\.\d{2,3}\]/g, '').trim() : 
                             null);
 
-          if (lyrics) {
-            return { lyrics: lyrics, track: firstResult.trackName, artist: firstResult.artistName, error: null };
-          }
+            if (lyrics) {
+              return { lyrics: lyrics, track: firstResult.trackName, artist: firstResult.artistName, error: null };
+            }
         }
       }
     }
   } catch (e) {
     console.error('LRCLIB API Error:', e);
+    // Fall through to the generic error message
   }
 
   const errorMessage = `Sorry, we couldn't find lyrics for "${track}" by "${artist}". Please check the spelling and try again.`;
