@@ -1,9 +1,7 @@
 
 'use client';
 
-import { useActionState, useState, useEffect, useRef } from 'react';
-import { useFormStatus } from 'react-dom';
-import { searchLyrics } from '@/app/actions';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Loader2, Search, Music, User, Library, Download, Youtube } from 'lucide-react';
@@ -11,10 +9,10 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
+import type { FormEvent } from 'react';
 
 
-function SubmitButton() {
-  const { pending } = useFormStatus();
+function SubmitButton({ pending }: { pending: boolean }) {
   return (
     <Button type="submit" size="icon" className="h-12 w-12 rounded-full shrink-0 bg-primary text-primary-foreground disabled:bg-primary/80" disabled={pending}>
       {pending ? <Loader2 className="h-5 w-5 animate-spin" /> : <Search className="h-5 w-5" />}
@@ -26,12 +24,13 @@ type LyricEntry = {
     lyrics: string | null;
     track: string | null;
     artist: string | null;
-    error: string | null;
 };
 
+type SearchState = LyricEntry & { error: string | null };
+
 export default function Home() {
-  const initialState: LyricEntry = { lyrics: null, track: null, artist: null, error: null };
-  const [state, formAction] = useActionState(searchLyrics, initialState);
+  const [state, setState] = useState<SearchState>({ lyrics: null, track: null, artist: null, error: null });
+  const [isSearching, setIsSearching] = useState(false);
   
   const [isLyricDialogOpen, setIsLyricDialogOpen] = useState(false);
   const [library, setLibrary] = useState<LyricEntry[]>([]);
@@ -67,9 +66,90 @@ export default function Home() {
     }
   }, [state.lyrics, state.track]);
 
+  async function searchLyrics(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setIsSearching(true);
+    setState({ lyrics: null, track: null, artist: null, error: null });
+
+    const formData = new FormData(event.currentTarget);
+    const track = formData.get('track') as string;
+    const artist = formData.get('artist') as string;
+
+    if (!track || track.trim() === '') {
+      setState({ lyrics: null, track: null, artist: null, error: 'Track name is required.' });
+      setIsSearching(false);
+      return;
+    }
+
+    try {
+      const params = new URLSearchParams();
+      const query = [track, artist].filter(Boolean).join(' ');
+      params.set('q', query);
+      
+      const lrcUrl = `https://lrclib.net/api/search?${params.toString()}`;
+      
+      const lrcResponse = await fetch(lrcUrl);
+
+      if (!lrcResponse.ok) {
+          throw new Error(`API request failed with status ${lrcResponse.status}`);
+      }
+
+      const lrcData = await lrcResponse.json();
+
+      if (lrcData && lrcData.length > 0) {
+        let foundSong = null;
+        const validSongs = lrcData.filter((item: any) => !item.instrumental && (item.plainLyrics || item.syncedLyrics));
+
+        if (validSongs.length === 0) {
+          // Fall through to generic error
+        } else if (artist) {
+            foundSong = validSongs.find((item: any) => 
+                item.trackName.toLowerCase() === track.toLowerCase() &&
+                item.artistName.toLowerCase().includes(artist.toLowerCase())
+            );
+        }
+
+        if (!foundSong) {
+            foundSong = validSongs[0];
+        }
+        
+        if (foundSong) {
+          let lyrics = foundSong.plainLyrics;
+          if (!lyrics && foundSong.syncedLyrics) {
+            lyrics = foundSong.syncedLyrics
+              .split('\n')
+              .map((line: string) => line.replace(/\[\d{2}:\d{2}\.\d{2,3}\]/g, '').trim())
+              .filter(Boolean)
+              .join('\n');
+          }
+
+          if (lyrics) {
+            setState({ lyrics: lyrics, track: foundSong.trackName, artist: foundSong.artistName, error: null });
+            setIsSearching(false);
+            return;
+          }
+        }
+      }
+    } catch (e) {
+      console.error('API Error:', e);
+      setState({
+          lyrics: null,
+          track: null,
+          artist: null,
+          error: 'An unexpected error occurred while fetching lyrics. Please try again later.'
+      });
+      setIsSearching(false);
+      return;
+    }
+
+    const errorMessage = `Sorry, we couldn't find lyrics for "${track}"${artist ? ` by "${artist}"` : ''}. Please check the spelling and try again.`;
+    setState({ lyrics: null, track: null, artist: null, error: errorMessage });
+    setIsSearching(false);
+  }
+
   const saveToLibrary = () => {
     if (state.lyrics && state.track && state.artist) {
-      const newEntry = { lyrics: state.lyrics, track: state.track, artist: state.artist, error: null };
+      const newEntry = { lyrics: state.lyrics, track: state.track, artist: state.artist };
       if (!library.some(item => item.track === newEntry.track && item.artist === newEntry.artist)) {
         setLibrary(prev => [...prev, newEntry]);
       }
@@ -130,7 +210,7 @@ export default function Home() {
                  <p className="text-muted-foreground text-center max-w-md text-sm sm:text-base">Search for song lyrics by track and artist to add them to your personal library.</p>
             </div>
 
-            <form ref={formRef} action={formAction} className="w-full max-w-2xl" onFocus={handleFocus} onBlur={handleBlur}>
+            <form ref={formRef} onSubmit={searchLyrics} className="w-full max-w-2xl" onFocus={handleFocus} onBlur={handleBlur}>
                 <div className="space-y-2">
                      <div className={cn("p-2 rounded-full flex items-center gap-2 border bg-card transition-shadow", isSearchActive && "shadow-lg")}>
                         <div className="relative flex-grow flex items-center pl-4">
@@ -143,7 +223,7 @@ export default function Home() {
                                 required
                             />
                         </div>
-                        <SubmitButton />
+                        <SubmitButton pending={isSearching} />
                     </div>
                     <div className={cn("transition-all duration-300 ease-in-out overflow-hidden", isSearchActive ? "max-h-24 opacity-100" : "max-h-0 opacity-0")}>
                         <div className={cn("p-2 rounded-full flex items-center gap-2 border bg-card")}>
