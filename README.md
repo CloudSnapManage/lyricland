@@ -2,7 +2,7 @@
 
 Welcome to Lyric Land, a sleek and modern web application designed for music lovers who want to find, save, and enjoy song lyrics. Search for your favorite tracks and build a personal library that's beautifully displayed as a virtual bookshelf.
 
-![Lyric Land Screenshot](apps/screenshots/screenshot.png)
+![Lyric Land Screenshot](src/apps/screenshots/screenshot.png)
 
 ---
 
