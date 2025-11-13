@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import type { FormEvent } from 'react';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 
 function SubmitButton({ pending }: { pending: boolean }) {
@@ -196,8 +197,12 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-start sm:justify-center min-h-dvh bg-background text-foreground p-4 sm:p-6 font-body">
+    <div className="flex flex-col items-center justify-start sm:justify-center min-h-dvh bg-background text-foreground p-4 sm:p-6 font-body relative">
         
+      <div className="absolute top-4 right-4">
+        <ThemeToggle />
+      </div>
+
         <div className="w-full max-w-4xl flex flex-col items-center gap-6 sm:gap-8">
             <div className="flex flex-col items-center gap-2 text-center">
                 <svg width="56" height="56" viewBox="0 0 24 24" id="music-lyric" data-name="Flat Line" xmlns="http://www.w3.org/2000/svg" className="icon flat-line h-14 w-14 sm:h-16 sm:w-16 fill-primary">
