@@ -2,7 +2,7 @@
 
 Welcome to Lyric Land, a sleek and modern web application designed for music lovers who want to find, save, and enjoy song lyrics. Search for your favorite tracks and build a personal library that's beautifully displayed as a virtual bookshelf.
 
-![Lyric Land Screenshot](https://placehold.co/800x450/F9FAFB/4F46E5?text=Lyric+Land+App)
+![Lyric Land Screenshot](apps/screenshots/screenshot.png)
 
 ---
 
@@ -25,7 +25,7 @@ Welcome to Lyric Land, a sleek and modern web application designed for music lov
 - **Styling:** [Tailwind CSS](https://tailwindcss.com/)
 - **UI Components:** [ShadCN UI](https://ui.shadcn.com/)
 - **Icons:** [Lucide React](https://lucide.dev/)
-- **State Management:** React Hooks (`useActionState`, `useState`, `useEffect`)
+- **State Management:** React Hooks (`useState`, `useEffect`)
 - **Linting & Formatting:** ESLint & Prettier (via Next.js defaults)
 
 ---
